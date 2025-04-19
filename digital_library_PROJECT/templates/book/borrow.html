@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block title %}Quản lý mượn trả - Thư viện số{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Quản lý mượn trả</h1>
+    {% if current_user and current_user.role == 'admin' %}
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-primary">
+        <i class="fas fa-tachometer-alt me-1"></i>Bảng điều khiển
+    </a>
+    {% endif %}
+</div>
+
+<div class="card shadow">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        {% if current_user and current_user.role == 'admin' %}
+                        <th>Người dùng</th>
+                        {% endif %}
+                        <th>Sách</th>
+                        <th>Ngày mượn</th>
+                        <th>Hạn trả</th>
+                        <th>Ngày trả</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if borrows %}
+                        {% for item in borrows %}
+                            {% if item|length == 2 %}
+                                {% set borrow = item[0] %}
+                                {% set book = item[1] %}
+                                {% set user = None %}
+                            {% elif item|length == 3 %}
+                                {% set borrow = item[0] %}
+                                {% set user = item[1] %}
+                                {% set book = item[2] %}
+                            {% endif %}
+                            
+                            <tr>
+                                <td>{{ borrow.id }}</td>
+                                {% if current_user and current_user.role == 'admin' %}
+                                <td>
+                                    {% if user %}
+                                        {{ user.username }}
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </td>
+                                {% endif %}
+                                <td>
+                                    <a href="{{ url_for('book_detail', book_id=book.id) }}">
+                                        {{ book.title }}
+                                    </a>
+                                </td>
+                                <td>{{ borrow.borrow_date|safe_date }}</td>
+                                <td>
+                                    {% if borrow.due_date and borrow.due_date != 0 and borrow.due_date != '0' %}
+                                        {{ borrow.due_date|safe_date }}
+                                    {% else %}
+                                        <span class="text-warning">Không xác định</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if borrow.return_date %}
+                                        {{ borrow.return_date|safe_date }}
+                                    {% else %}
+                                        <span class="text-muted">Chưa trả</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if borrow.status == 'borrowed' %}
+                                        <span class="badge bg-primary">Đang mượn</span>
+                                    {% elif borrow.status == 'returned' %}
+                                        <span class="badge bg-success">Đã trả</span>
+                                    {% elif borrow.status == 'overdue' %}
+                                        <span class="badge bg-danger">Quá hạn</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if borrow.status == 'borrowed' %}
+                                        <a href="{{ url_for('download_book_file', book_id=book.id) }}" class="btn btn-sm btn-success">
+                                            <i class="fas fa-download"></i> Tải xuống
+                                        </a>
+                                        
+                                        {% if current_user and current_user.role == 'admin' %}
+                                        <div class="btn-group ms-1">
+                                            <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
+                                                Cập nhật
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li>
+                                                    <form action="{{ url_for('update_borrow', borrow_id=borrow.id) }}" method="POST">
+                                                        <input type="hidden" name="status" value="returned">
+                                                        <button type="submit" class="dropdown-item">Đánh dấu đã trả</button>
+                                                    </form>
+                                                </li>
+                                                <li>
+                                                    <form action="{{ url_for('update_borrow', borrow_id=borrow.id) }}" method="POST">
+                                                        <input type="hidden" name="status" value="overdue">
+                                                        <button type="submit" class="dropdown-item">Đánh dấu quá hạn</button>
+                                                    </form>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        {% endif %}
+                                    {% elif borrow.status == 'overdue' %}
+                                        <a href="{{ url_for('download_book_file', book_id=book.id) }}" class="btn btn-sm btn-success">
+                                            <i class="fas fa-download"></i> Tải xuống
+                                        </a>
+                                        
+                                        {% if current_user and current_user.role == 'admin' %}
+                                        <div class="btn-group ms-1">
+                                            <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
+                                                Cập nhật
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li>
+                                                    <form action="{{ url_for('update_borrow', borrow_id=borrow.id) }}" method="POST">
+                                                        <input type="hidden" name="status" value="returned">
+                                                        <button type="submit" class="dropdown-item">Đánh dấu đã trả</button>
+                                                    </form>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-muted"><i class="fas fa-check-circle"></i> Đã hoàn tất</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="{% if current_user and current_user.role == 'admin' %}8{% else %}7{% endif %}" class="text-center">Chưa có lượt mượn sách nào!</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

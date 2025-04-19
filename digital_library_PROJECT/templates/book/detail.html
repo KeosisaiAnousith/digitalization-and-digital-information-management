@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ book.title }} - Thư viện số{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card mb-4">
+            {% if book.cover_image %}
+                <img src="{{ url_for('static', filename='uploads/covers/' + book.cover_image) }}" class="card-img-top" alt="{{ book.title }}">
+            {% else %}
+                <div class="bg-secondary text-white d-flex justify-content-center align-items-center" style="height: 400px;">
+                    <i class="fas fa-book fa-5x"></i>
+                </div>
+            {% endif %}
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-3">
+                    <small class="text-muted">
+                        {% if book.category_info %}
+                            {{ book.category_info.name }}
+                        {% else %}
+                            Chưa phân loại
+                        {% endif %}
+                    </small>
+                    <small class="text-muted">
+                        Thêm ngày: {{ book.added_at|safe_date }}
+                    </small>
+                </div>
+                
+                {% if current_user %}
+                    <div class="d-grid gap-2">
+                        {% if active_borrow %}
+                            <a href="{{ url_for('download_book_file', book_id=book.id) }}" class="btn btn-success">
+                                <i class="fas fa-download me-1"></i>Tải xuống
+                            </a>
+                            <div class="alert alert-info mt-2 mb-0">
+                                <small>
+                                    Bạn đã mượn sách này. Hạn trả: {{ active_borrow.due_date|safe_date }}
+                                </small>
+                            </div>
+                        {% else %}
+                            <a href="{{ url_for('borrow_book', book_id=book.id) }}" class="btn btn-primary">
+                                <i class="fas fa-book me-1"></i>Mượn sách
+                            </a>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        Vui lòng <a href="{{ url_for('login') }}">đăng nhập</a> để mượn và tải xuống sách.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <h1 class="mb-3">{{ book.title }}</h1>
+        
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <p><strong>Tác giả:</strong> {{ book.author }}</p>
+                <p><strong>Thể loại:</strong> 
+                    {% if book.category_info %}
+                        {{ book.category_info.name }}
+                    {% else %}
+                        Chưa phân loại
+                    {% endif %}
+                </p>
+                {% if book.publication_year %}
+                    <p><strong>Năm xuất bản:</strong> {{ book.publication_year }}</p>
+                {% endif %}
+                {% if book.language %}
+                    <p><strong>Ngôn ngữ:</strong> {{ book.language }}</p>
+                {% endif %}
+            </div>
+            <div class="col-md-6">
+                <p>
+                    <strong>Ngày thêm:</strong> {{ book.added_at|safe_date }}
+                </p>
+                <p><strong>Lượt mượn:</strong> {{ borrowed_count|default(0) }}</p>
+                {% if book.pages %}
+                    <p><strong>Số trang:</strong> {{ book.pages }}</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4>Mô tả</h4>
+            </div>
+            <div class="card-body">
+                {% if book.description %}
+                    <p>{{ book.description }}</p>
+                {% else %}
+                    <p class="text-muted">Không có mô tả.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Mã QR -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h4>Mã QR</h4>
+    </div>
+    <div class="card-body text-center">
+        <p>Quét mã QR này để mượn sách nhanh chóng:</p>
+        
+        {% if book.qr_code %}
+            <img src="{{ url_for('book_qr', book_id=book.id) }}" alt="Mã QR" class="img-fluid mb-3" style="max-width: 250px;">
+        {% else %}
+            <a href="{{ url_for('book_qr', book_id=book.id) }}" class="btn btn-outline-primary">
+                <i class="fas fa-qrcode me-1"></i>Tạo mã QR cho sách này
+            </a>
+        {% endif %}
+        
+        <div class="mt-3">
+            <a href="{{ url_for('scan_qr') }}" class="btn btn-info text-white">
+                <i class="fas fa-camera me-1"></i>Quét mã QR để mượn sách
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

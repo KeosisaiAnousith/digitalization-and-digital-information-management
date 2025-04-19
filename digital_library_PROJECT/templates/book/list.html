@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}Danh sách sách - Thư viện số{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Danh sách sách</h1>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form action="{{ url_for('book_list') }}" method="get">
+            <div class="input-group">
+                <input type="text" class="form-control" name="search" placeholder="Tìm kiếm sách..." value="{{ request.args.get('search', '') }}">
+                <button class="btn btn-primary" type="submit">
+                    <i class="fas fa-search me-1"></i>Tìm kiếm
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row">
+    {% for book in books.items %}
+        <div class="col-md-3 mb-4">
+            <div class="card h-100">
+                {% if book.cover_image %}
+                    <img src="{{ url_for('static', filename='uploads/covers/' + book.cover_image) }}" class="card-img-top" style="height: 250px; object-fit: cover;" alt="{{ book.title }}">
+                {% else %}
+                    <div class="bg-secondary text-white d-flex justify-content-center align-items-center" style="height: 250px;">
+                        <i class="fas fa-book fa-3x"></i>
+                    </div>
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ book.title }}</h5>
+                    <p class="card-text text-muted">{{ book.author }}</p>
+                    <p class="card-text"><small class="text-muted">
+                        {% if book.category_info %}
+                            {{ book.category_info.name }}
+                        {% else %}
+                            Chưa phân loại
+                        {% endif %}
+                    </small></p>
+                </div>
+                <div class="card-footer bg-white border-top-0">
+                    <a href="{{ url_for('book_detail', book_id=book.id) }}" class="btn btn-outline-primary btn-sm d-block">Xem chi tiết</a>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="col-12">
+            <div class="alert alert-info">Không tìm thấy sách nào.</div>
+        </div>
+    {% endfor %}
+</div>
+
+<!-- Phân trang -->
+{% if books.pages > 1 %}
+    <nav aria-label="Phân trang">
+        <ul class="pagination justify-content-center">
+            {% if books.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('book_list', page=books.prev_num, search=request.args.get('search', ''), category=request.args.get('category', '')) }}">Trước</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">Trước</span>
+                </li>
+            {% endif %}
+            
+            {% for page_num in books.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                {% if page_num %}
+                    <li class="page-item {{ 'active' if page_num == books.page else '' }}">
+                        <a class="page-link" href="{{ url_for('book_list', page=page_num, search=request.args.get('search', ''), category=request.args.get('category', '')) }}">{{ page_num }}</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if books.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('book_list', page=books.next_num, search=request.args.get('search', ''), category=request.args.get('category', '')) }}">Tiếp</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">Tiếp</span>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endif %}
+{% endblock %}
