@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block title %}Thêm sách mới - Thư viện số{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Thêm sách mới</h1>
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-primary">
+        <i class="fas fa-arrow-left me-1"></i>Quay lại
+    </a>
+</div>
+
+<div class="card shadow">
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('add_book') }}" enctype="multipart/form-data">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Tiêu đề</label>
+                        <input type="text" class="form-control" id="title" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="author" class="form-label">Tác giả</label>
+                        <input type="text" class="form-control" id="author" name="author" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="category_id" class="form-label">Thể loại</label>
+                        <select class="form-control" id="category_id" name="category_id" required>
+                            <option value="">-- Chọn thể loại --</option>
+                            {% for category in categories %}
+                                <option value="{{ category.id }}">{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="publication_year" class="form-label">Năm xuất bản</label>
+                        <input type="number" class="form-control" id="publication_year" name="publication_year" min="1000" max="2100">
+                    </div>
+                    <div class="mb-3">
+                        <label for="language" class="form-label">Ngôn ngữ</label>
+                        <input type="text" class="form-control" id="language" name="language">
+                    </div>
+                    <div class="mb-3">
+                        <label for="pages" class="form-label">Số trang</label>
+                        <input type="number" class="form-control" id="pages" name="pages" min="1">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="cover" class="form-label">Ảnh bìa</label>
+                        <input type="file" class="form-control" id="cover" name="cover" accept="image/*">
+                        <div class="form-text">Để trống nếu không có ảnh bìa</div>
+                    </div>
+                    <div class="mt-4">
+                        <img id="cover-preview" class="img-fluid d-none">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="description" class="form-label">Mô tả</label>
+                <textarea class="form-control" id="description" name="description" rows="4"></textarea>
+            </div>
+            
+            <div class="mb-3">
+                <label for="book_file" class="form-label">File sách</label>
+                <input type="file" class="form-control" id="book_file" name="book_file" required>
+                <div class="form-text">Hỗ trợ PDF, EPUB, MOBI, DOC, DOCX</div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i>Thêm sách
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Xem trước ảnh bìa
+    document.getElementById('cover').addEventListener('change', function() {
+        const file = this.files[0];
+        const preview = document.getElementById('cover-preview');
+        
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.classList.remove('d-none');
+            };
+            reader.readAsDataURL(file);
+        } else {
+            preview.src = '';
+            preview.classList.add('d-none');
+        }
+    });
+</script>
+{% endblock %}

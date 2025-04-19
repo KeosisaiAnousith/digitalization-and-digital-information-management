@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+
+{% block title %}Nhập sách tự động - Thư viện số{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-file-import me-2"></i>Nhập sách tự động</h1>
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-primary">
+        <i class="fas fa-arrow-left me-1"></i>Quay lại
+    </a>
+</div>
+
+<div class="row">
+    <!-- Tab Navigation -->
+    <div class="col-12 mb-4">
+        <ul class="nav nav-tabs" id="importTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="google-tab" data-bs-toggle="tab" data-bs-target="#google-import" type="button" role="tab" aria-controls="google-import" aria-selected="true">
+                    <i class="fab fa-google me-1"></i>Nhập từ Google Books
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="csv-tab" data-bs-toggle="tab" data-bs-target="#csv-import" type="button" role="tab" aria-controls="csv-import" aria-selected="false">
+                    <i class="fas fa-file-csv me-1"></i>Nhập từ tệp CSV
+                </button>
+            </li>
+        </ul>
+    </div>
+    
+    <!-- Tab Content -->
+    <div class="col-12">
+        <div class="tab-content" id="importTabsContent">
+            <!-- Google Books Import -->
+            <div class="tab-pane fade show active" id="google-import" role="tabpanel" aria-labelledby="google-tab">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fab fa-google me-2"></i>Nhập sách từ Google Books</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-3">Hệ thống sẽ tự động tìm kiếm và nhập thông tin sách từ Google Books API.</p>
+                        
+                        <form action="{{ url_for('book_import.import_from_google') }}" method="POST">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="search_term" class="form-label">Từ khóa tìm kiếm</label>
+                                        <input type="text" class="form-control" id="search_term" name="search_term" 
+                                            placeholder="Nhập tên sách, tác giả, ISBN..." required>
+                                        <div class="form-text">Nhập từ khóa để tìm kiếm sách (tên sách, tác giả, ISBN...)</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label for="category_id" class="form-label">Danh mục</label>
+                                        <select class="form-select" name="category_id" id="category_id">
+                                            <option value="">-- Chọn danh mục --</option>
+                                            {% for category in categories %}
+                                                <option value="{{ category.id }}">{{ category.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label for="max_results" class="form-label">Số lượng tối đa</label>
+                                        <input type="number" class="form-control" id="max_results" name="max_results" 
+                                            value="10" min="1" max="40">
+                                        <div class="form-text">Số lượng sách tối đa sẽ được nhập</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>Hệ thống sẽ tự động kiểm tra trùng lặp dựa trên tên sách và tác giả.
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search me-1"></i>Tìm kiếm và nhập sách
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- CSV Import -->
+            <div class="tab-pane fade" id="csv-import" role="tabpanel" aria-labelledby="csv-tab">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-file-csv me-2"></i>Nhập sách từ tệp CSV</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-3">Nhập danh sách sách từ tệp CSV có định dạng phù hợp.</p>
+                        
+                        <form action="{{ url_for('book_import.import_from_csv') }}" method="POST" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label for="csv_file" class="form-label">Chọn tệp CSV</label>
+                                <input type="file" class="form-control" id="csv_file" name="csv_file" accept=".csv" required>
+                                <div class="form-text">Tệp CSV phải chứa các cột: title, author, category (tùy chọn), description (tùy chọn), publication_year (tùy chọn), language (tùy chọn), pages (tùy chọn)</div>
+                            </div>
+                            
+                            <div class="alert alert-info">
+                                <div class="d-flex">
+                                    <div class="me-3">
+                                        <i class="fas fa-info-circle fa-2x"></i>
+                                    </div>
+                                    <div>
+                                        <p class="mb-1"><strong>Lưu ý:</strong></p>
+                                        <ul class="mb-0">
+                                            <li>Mỗi hàng trong file CSV tương ứng với một cuốn sách</li>
+                                            <li>Các cột title và author là bắt buộc</li>
+                                            <li>Hệ thống sẽ tự động kiểm tra trùng lặp dựa trên tên sách và tác giả</li>
+                                            <li>Đối với cột category, giá trị phải trùng với tên danh mục đã có trong hệ thống</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-upload me-1"></i>Tải lên và nhập sách
+                                </button>
+                                <a href="{{ url_for('book_import.export_csv_template') }}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-download me-1"></i>Tải xuống mẫu CSV
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4 shadow">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-question-circle me-2"></i>Hướng dẫn nhập sách tự động</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0"><i class="fab fa-google me-1"></i>Nhập từ Google Books</h6>
+                    </div>
+                    <div class="card-body">
+                        <p>Tìm kiếm và nhập sách từ Google Books API:</p>
+                        <ol>
+                            <li>Nhập từ khóa tìm kiếm (tên sách, tác giả, ISBN...)</li>
+                            <li>Chọn danh mục cho sách (tùy chọn)</li>
+                            <li>Chọn số lượng sách tối đa muốn nhập</li>
+                            <li>Nhấp "Tìm kiếm và nhập sách"</li>
+                        </ol>
+                        <p class="mb-0 text-muted"><small>Lưu ý: Hệ thống sẽ tự động tải ảnh bìa sách nếu có.</small></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0"><i class="fas fa-file-csv me-1"></i>Nhập từ CSV</h6>
+                    </div>
+                    <div class="card-body">
+                        <p>Nhập sách từ tệp CSV:</p>
+                        <ol>
+                            <li>Tải xuống mẫu CSV để tham khảo định dạng</li>
+                            <li>Chuẩn bị tệp CSV với thông tin sách (đảm bảo có các cột bắt buộc)</li>
+                            <li>Tải lên tệp CSV</li>
+                            <li>Nhấp "Tải lên và nhập sách"</li>
+                        </ol>
+                        <p class="mb-0 text-muted"><small>Lưu ý: Hệ thống sẽ bỏ qua các sách trùng lặp hoặc có dữ liệu không hợp lệ.</small></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

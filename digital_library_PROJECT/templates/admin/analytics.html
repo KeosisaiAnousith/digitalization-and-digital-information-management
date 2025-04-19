@@ -1,0 +1,737 @@
+{% extends 'base.html' %}
+
+{% block title %}Phân tích dữ liệu - Thư viện số{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-chart-line me-2"></i>Phân tích dữ liệu thư viện</h1>
+    <div>
+        <button id="generateReportBtn" class="btn btn-success">
+            <i class="fas fa-file-export me-1"></i>Xuất báo cáo tháng
+        </button>
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-primary ms-2">
+            <i class="fas fa-arrow-left me-1"></i>Quay lại
+        </a>
+    </div>
+</div>
+
+<!-- Bộ lọc thời gian -->
+<div class="card mb-4 shadow-sm">
+    <div class="card-body py-2">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <span class="text-muted me-2">Thời gian:</span>
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-primary btn-sm time-filter active" data-days="30">30 ngày</button>
+                    <button type="button" class="btn btn-outline-primary btn-sm time-filter" data-days="90">90 ngày</button>
+                    <button type="button" class="btn btn-outline-primary btn-sm time-filter" data-days="180">6 tháng</button>
+                    <button type="button" class="btn btn-outline-primary btn-sm time-filter" data-days="365">1 năm</button>
+                </div>
+            </div>
+            <div class="text-muted">
+                <small><i class="fas fa-sync-alt me-1"></i>Cập nhật lần cuối: <span id="lastUpdated">Vừa xong</span></small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Thống kê tổng quan -->
+<div class="row mb-4">
+    <div class="col-md-2">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+                <div class="text-primary mb-2">
+                    <i class="fas fa-book fa-2x"></i>
+                </div>
+                <h3 id="totalBooks" class="mb-0">--</h3>
+                <div class="text-muted small">Tổng số sách</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+                <div class="text-success mb-2">
+                    <i class="fas fa-users fa-2x"></i>
+                </div>
+                <h3 id="totalUsers" class="mb-0">--</h3>
+                <div class="text-muted small">Tổng người dùng</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+                <div class="text-info mb-2">
+                    <i class="fas fa-handshake fa-2x"></i>
+                </div>
+                <h3 id="totalBorrows" class="mb-0">--</h3>
+                <div class="text-muted small">Tổng lượt mượn</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+                <div class="text-primary mb-2">
+                    <i class="fas fa-book-reader fa-2x"></i>
+                </div>
+                <h3 id="activeBorrows" class="mb-0">--</h3>
+                <div class="text-muted small">Đang mượn</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+                <div class="text-danger mb-2">
+                    <i class="fas fa-exclamation-circle fa-2x"></i>
+                </div>
+                <h3 id="overdueCount" class="mb-0">--</h3>
+                <div class="text-muted small">Quá hạn</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+                <div class="text-warning mb-2">
+                    <i class="fas fa-user-plus fa-2x"></i>
+                </div>
+                <h3 id="newUsers" class="mb-0">--</h3>
+                <div class="text-muted small">Người dùng mới</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Biểu đồ thống kê -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Thống kê theo tháng</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="monthlyStatsChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Thống kê theo danh mục</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="categoryStatsChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Top mượn sách -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Top người mượn sách</h5>
+                <span class="badge bg-primary">30 ngày qua</span>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Tên đăng nhập</th>
+                                <th>Họ và tên</th>
+                                <th class="text-end">Số lượt mượn</th>
+                            </tr>
+                        </thead>
+                        <tbody id="topBorrowers">
+                            <tr>
+                                <td colspan="4" class="text-center">Đang tải dữ liệu...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Top sách được mượn</h5>
+                <span class="badge bg-primary">30 ngày qua</span>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Tiêu đề</th>
+                                <th>Tác giả</th>
+                                <th class="text-end">Số lượt mượn</th>
+                            </tr>
+                        </thead>
+                        <tbody id="topBooks">
+                            <tr>
+                                <td colspan="4" class="text-center">Đang tải dữ liệu...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sách quá hạn -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Sách đang quá hạn</h5>
+        <button class="btn btn-sm btn-outline-danger" id="exportOverdueBtn">
+            <i class="fas fa-file-export me-1"></i>Xuất danh sách
+        </button>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Tên đăng nhập</th>
+                        <th>Họ và tên</th>
+                        <th>Sách</th>
+                        <th>Tác giả</th>
+                        <th>Ngày mượn</th>
+                        <th>Hạn trả</th>
+                        <th class="text-end">Số ngày quá hạn</th>
+                    </tr>
+                </thead>
+                <tbody id="overdueBooks">
+                    <tr>
+                        <td colspan="7" class="text-center">Đang tải dữ liệu...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal báo cáo tháng -->
+<div class="modal fade" id="monthlyReportModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Báo cáo tháng <span id="reportMonth"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-4 p-2 bg-light">
+                    <h4>Báo cáo thống kê hoạt động thư viện</h4>
+                    <p class="text-muted">Tháng <span id="reportMonthName"></span>/<span id="reportYear"></span></p>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Số liệu tổng hợp</h5>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Tổng lượt mượn sách
+                                        <span class="badge bg-primary rounded-pill" id="reportBorrowCount">--</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Tổng lượt trả sách
+                                        <span class="badge bg-success rounded-pill" id="reportReturnCount">--</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Top người dùng & sách</h5>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h6 class="mb-1">Người mượn nhiều nhất</h6>
+                                            <small class="text-muted" id="reportTopBorrowerCount">--</small>
+                                        </div>
+                                        <p class="mb-1" id="reportTopBorrower">--</p>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h6 class="mb-1">Sách được mượn nhiều nhất</h6>
+                                            <small class="text-muted" id="reportTopBookCount">--</small>
+                                        </div>
+                                        <p class="mb-1" id="reportTopBook">--</p>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="small text-muted text-end">
+                    <p>Báo cáo được tạo ngày <span id="reportGeneratedAt"></span></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary" id="printReportBtn">
+                    <i class="fas fa-print me-1"></i>In báo cáo
+                </button>
+                <button type="button" class="btn btn-success" id="downloadReportBtn">
+                    <i class="fas fa-download me-1"></i>Tải xuống PDF
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Biến lưu trữ thời gian hiện tại
+        let currentDays = 30;
+        let monthlyStatsChart = null;
+        let categoryStatsChart = null;
+        
+        // Khởi tạo trang
+        loadSummaryData();
+        loadMonthlyStats();
+        loadCategoryStats();
+        loadTopBorrowers();
+        loadTopBooks();
+        loadOverdueBooks();
+        
+        // Cập nhật thời gian
+        document.querySelectorAll('.time-filter').forEach(button => {
+            button.addEventListener('click', function() {
+                // Cập nhật trạng thái active
+                document.querySelectorAll('.time-filter').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                // Cập nhật ngày
+                currentDays = parseInt(this.getAttribute('data-days'));
+                
+                // Cập nhật badge
+                document.querySelectorAll('.badge.bg-primary').forEach(badge => {
+                    if (badge.textContent.includes('ngày')) {
+                        badge.textContent = `${currentDays} ngày qua`;
+                    }
+                });
+                
+                // Tải lại dữ liệu
+                loadTopBorrowers();
+                loadTopBooks();
+                
+                // Cập nhật chart
+                loadMonthlyStats();
+            });
+        });
+        
+        // Xử lý sự kiện xuất báo cáo
+        document.getElementById('generateReportBtn').addEventListener('click', generateMonthlyReport);
+        
+        // Xử lý sự kiện in báo cáo
+        document.getElementById('printReportBtn').addEventListener('click', function() {
+            window.print();
+        });
+        
+        // Function tải dữ liệu tổng quan
+        function loadSummaryData() {
+            fetch('/api/analytics/summary')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('totalBooks').textContent = data.total_books;
+                    document.getElementById('totalUsers').textContent = data.total_users;
+                    document.getElementById('totalBorrows').textContent = data.total_borrows;
+                    document.getElementById('activeBorrows').textContent = data.active_borrows;
+                    document.getElementById('overdueCount').textContent = data.overdue_count;
+                    document.getElementById('newUsers').textContent = data.new_users_count;
+                    
+                    // Cập nhật thời gian
+                    document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
+                })
+                .catch(error => console.error('Error loading summary data:', error));
+        }
+        
+        // Function tải thống kê theo tháng
+        function loadMonthlyStats() {
+            fetch('/api/analytics/monthly-stats?months=12')
+                .then(response => response.json())
+                .then(data => {
+                    // Chuẩn bị dữ liệu cho biểu đồ
+                    const labels = data.map(item => {
+                        const [year, month] = item.month.split('-');
+                        return `${month}/${year}`;
+                    });
+                    
+                    const borrowData = data.map(item => item.borrows);
+                    const returnData = data.map(item => item.returns);
+                    const newUserData = data.map(item => item.new_users);
+                    
+                    // Tạo biểu đồ
+                    const ctx = document.getElementById('monthlyStatsChart').getContext('2d');
+                    
+                    if (monthlyStatsChart) {
+                        monthlyStatsChart.destroy();
+                    }
+                    
+                    monthlyStatsChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [
+                                {
+                                    label: 'Lượt mượn',
+                                    data: borrowData,
+                                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                                    borderColor: 'rgba(54, 162, 235, 1)',
+                                    borderWidth: 1
+                                },
+                                {
+                                    label: 'Lượt trả',
+                                    data: returnData,
+                                    backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                                    borderColor: 'rgba(75, 192, 192, 1)',
+                                    borderWidth: 1
+                                },
+                                {
+                                    label: 'Người dùng mới',
+                                    data: newUserData,
+                                    backgroundColor: 'rgba(255, 159, 64, 0.5)',
+                                    borderColor: 'rgba(255, 159, 64, 1)',
+                                    borderWidth: 1
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                })
+                .catch(error => console.error('Error loading monthly stats:', error));
+        }
+        
+        // Function tải thống kê theo danh mục
+        function loadCategoryStats() {
+            fetch('/api/analytics/category-stats')
+                .then(response => response.json())
+                .then(data => {
+                    // Chuẩn bị dữ liệu cho biểu đồ
+                    const labels = data.map(item => item.category);
+                    const values = data.map(item => item.count);
+                    
+                    // Tạo biểu đồ
+                    const ctx = document.getElementById('categoryStatsChart').getContext('2d');
+                    
+                    if (categoryStatsChart) {
+                        categoryStatsChart.destroy();
+                    }
+                    
+                    const colors = generateColors(data.length);
+                    
+                    categoryStatsChart = new Chart(ctx, {
+                        type: 'pie',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                data: values,
+                                backgroundColor: colors.background,
+                                borderColor: colors.border,
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'right'
+                                }
+                            }
+                        }
+                    });
+                })
+                .catch(error => console.error('Error loading category stats:', error));
+        }
+        
+        // Function tải top người mượn
+        function loadTopBorrowers() {
+            fetch(`/api/analytics/top-borrowers?days=${currentDays}&limit=10`)
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.getElementById('topBorrowers');
+                    tableBody.innerHTML = '';
+                    
+                    if (data.length === 0) {
+                        tableBody.innerHTML = '<tr><td colspan="4" class="text-center">Không có dữ liệu</td></tr>';
+                        return;
+                    }
+                    
+                    data.forEach((borrower, index) => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${index + 1}</td>
+                            <td>${borrower.username}</td>
+                            <td>${borrower.full_name}</td>
+                            <td class="text-end">${borrower.borrow_count}</td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                })
+                .catch(error => console.error('Error loading top borrowers:', error));
+        }
+        
+        // Function tải top sách
+        function loadTopBooks() {
+            fetch(`/api/analytics/top-books?days=${currentDays}&limit=10`)
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.getElementById('topBooks');
+                    tableBody.innerHTML = '';
+                    
+                    if (data.length === 0) {
+                        tableBody.innerHTML = '<tr><td colspan="4" class="text-center">Không có dữ liệu</td></tr>';
+                        return;
+                    }
+                    
+                    data.forEach((book, index) => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${index + 1}</td>
+                            <td>${book.title}</td>
+                            <td>${book.author}</td>
+                            <td class="text-end">${book.borrow_count}</td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                })
+                .catch(error => console.error('Error loading top books:', error));
+        }
+        
+        // Function tải sách quá hạn
+        function loadOverdueBooks() {
+            fetch('/api/analytics/overdue-books')
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.getElementById('overdueBooks');
+                    tableBody.innerHTML = '';
+                    
+                    if (data.length === 0) {
+                        tableBody.innerHTML = '<tr><td colspan="7" class="text-center">Không có sách quá hạn</td></tr>';
+                        return;
+                    }
+                    
+                    data.forEach(book => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${book.username}</td>
+                            <td>${book.full_name}</td>
+                            <td>${book.book_title}</td>
+                            <td>${book.book_author}</td>
+                            <td>${book.borrow_date}</td>
+                            <td>${book.due_date}</td>
+                            <td class="text-end text-danger">${book.days_overdue}</td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                })
+                .catch(error => console.error('Error loading overdue books:', error));
+        }
+        
+        // Function tạo báo cáo tháng
+        function generateMonthlyReport() {
+            fetch('/api/analytics/generate-report')
+                .then(response => response.json())
+                .then(data => {
+                    // Cập nhật dữ liệu modal
+                    document.getElementById('reportMonth').textContent = data.month;
+                    document.getElementById('reportMonthName').textContent = data.month_name;
+                    document.getElementById('reportYear').textContent = data.year;
+                    document.getElementById('reportBorrowCount').textContent = data.borrow_count;
+                    document.getElementById('reportReturnCount').textContent = data.return_count;
+                    
+                    // Top người mượn
+                    if (data.top_borrower.username) {
+                        document.getElementById('reportTopBorrower').textContent = `${data.top_borrower.full_name} (${data.top_borrower.username})`;
+                        document.getElementById('reportTopBorrowerCount').textContent = `${data.top_borrower.borrow_count} lượt mượn`;
+                    } else {
+                        document.getElementById('reportTopBorrower').textContent = 'Không có dữ liệu';
+                        document.getElementById('reportTopBorrowerCount').textContent = '';
+                    }
+                    
+                    // Top sách
+                    if (data.top_book.title) {
+                        document.getElementById('reportTopBook').textContent = `${data.top_book.title} - ${data.top_book.author}`;
+                        document.getElementById('reportTopBookCount').textContent = `${data.top_book.borrow_count} lượt mượn`;
+                    } else {
+                        document.getElementById('reportTopBook').textContent = 'Không có dữ liệu';
+                        document.getElementById('reportTopBookCount').textContent = '';
+                    }
+                    
+                    document.getElementById('reportGeneratedAt').textContent = data.generated_at;
+                    
+                    // Hiển thị modal
+                    const modal = new bootstrap.Modal(document.getElementById('monthlyReportModal'));
+                    modal.show();
+                })
+                .catch(error => console.error('Error generating report:', error));
+        }
+        
+        // Hàm tạo màu ngẫu nhiên cho biểu đồ
+        function generateColors(count) {
+            const backgroundColors = [];
+            const borderColors = [];
+            
+            const predefinedColors = [
+                'rgba(54, 162, 235, 0.5)', 'rgba(255, 99, 132, 0.5)', 
+                'rgba(75, 192, 192, 0.5)', 'rgba(255, 206, 86, 0.5)',
+                'rgba(153, 102, 255, 0.5)', 'rgba(255, 159, 64, 0.5)',
+                'rgba(199, 199, 199, 0.5)', 'rgba(83, 102, 255, 0.5)',
+                'rgba(40, 167, 69, 0.5)', 'rgba(220, 53, 69, 0.5)'
+            ];
+            
+            const predefinedBorders = [
+                'rgba(54, 162, 235, 1)', 'rgba(255, 99, 132, 1)', 
+                'rgba(75, 192, 192, 1)', 'rgba(255, 206, 86, 1)',
+                'rgba(153, 102, 255, 1)', 'rgba(255, 159, 64, 1)',
+                'rgba(199, 199, 199, 1)', 'rgba(83, 102, 255, 1)',
+                'rgba(40, 167, 69, 1)', 'rgba(220, 53, 69, 1)'
+            ];
+            
+            for (let i = 0; i < count; i++) {
+                if (i < predefinedColors.length) {
+                    backgroundColors.push(predefinedColors[i]);
+                    borderColors.push(predefinedBorders[i]);
+                } else {
+                    // Nếu nhiều hơn số màu định sẵn, tạo màu ngẫu nhiên
+                    const r = Math.floor(Math.random() * 255);
+                    const g = Math.floor(Math.random() * 255);
+                    const b = Math.floor(Math.random() * 255);
+                    backgroundColors.push(`rgba(${r}, ${g}, ${b}, 0.5)`);
+                    borderColors.push(`rgba(${r}, ${g}, ${b}, 1)`);
+                }
+            }
+            
+            return {
+                background: backgroundColors,
+                border: borderColors
+            };
+        }
+        
+        // Thêm chức năng xuất danh sách sách quá hạn
+        document.getElementById('exportOverdueBtn').addEventListener('click', function() {
+            exportTableToCSV('overdueBooks', 'danh_sach_sach_qua_han.csv');
+        });
+        
+        // Chức năng xuất bảng sang CSV
+        function exportTableToCSV(tableId, filename) {
+            const table = document.getElementById(tableId);
+            const rows = table.querySelectorAll('tr');
+            const csvContent = [];
+            
+            // Lấy header
+            const headerRow = rows[0];
+            const headerCells = headerRow.querySelectorAll('th');
+            const headers = [];
+            
+            headerCells.forEach(cell => {
+                headers.push(cell.textContent.trim());
+            });
+            
+            csvContent.push(headers.join(','));
+            
+            // Lấy dữ liệu
+            for (let i = 1; i < rows.length; i++) {
+                const row = rows[i];
+                const cells = row.querySelectorAll('td');
+                const rowData = [];
+                
+                // Bỏ qua hàng thông báo không có dữ liệu
+                if (cells.length === 1 && cells[0].getAttribute('colspan')) {
+                    continue;
+                }
+                
+                cells.forEach(cell => {
+                    rowData.push('"' + cell.textContent.trim() + '"');
+                });
+                
+                csvContent.push(rowData.join(','));
+            }
+            
+            // Tạo và tải xuống file CSV
+            const csvString = csvContent.join('\n');
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            
+            const link = document.createElement('a');
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', filename);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+        
+        // Thêm sự kiện tải xuống báo cáo
+        document.getElementById('downloadReportBtn').addEventListener('click', function() {
+            alert('Chức năng đang được phát triển. Vui lòng sử dụng chức năng in báo cáo.');
+        });
+    });
+</script>
+
+<style type="text/css" media="print">
+    /* Định dạng khi in báo cáo */
+    @page {
+        size: A4;
+        margin: 2cm;
+    }
+    
+    body * {
+        visibility: hidden;
+    }
+    
+    .modal-content, .modal-content * {
+        visibility: visible;
+    }
+    
+    .modal {
+        position: absolute;
+        left: 0;
+        top: 0;
+        margin: 0;
+        padding: 0;
+        overflow: visible !important;
+    }
+    
+    .modal-dialog {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+    
+    .modal-footer, .btn-close {
+        display: none !important;
+    }
+</style>
+{% endblock %}

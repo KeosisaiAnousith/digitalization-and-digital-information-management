@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}Quản lý sách - Thư viện số{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Quản lý sách</h1>
+    <div>
+        <a href="{{ url_for('add_book') }}" class="btn btn-success">
+            <i class="fas fa-plus me-1"></i>Thêm sách mới
+        </a>
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-primary ms-2">
+            <i class="fas fa-tachometer-alt me-1"></i>Bảng điều khiển
+        </a>
+    </div>
+</div>
+
+<div class="card shadow">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Ảnh bìa</th>
+                        <th>Tiêu đề</th>
+                        <th>Tác giả</th>
+                        <th>Danh mục</th>
+                        <th>Ngày thêm</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for book in books %}
+                        <tr>
+                            <td>{{ book.id }}</td>
+                            <td>
+                                {% if book.cover_image %}
+                                    <img src="{{ url_for('static', filename='uploads/covers/' + book.cover_image) }}" class="img-thumbnail" style="height: 50px;" alt="{{ book.title }}">
+                                {% else %}
+                                    <span class="badge bg-secondary"><i class="fas fa-image"></i> Không có ảnh</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ book.title }}</td>
+                            <td>{{ book.author }}</td>
+                            <td>
+                                {% if book.category_info %}
+                                    {{ book.category_info.name }}
+                                {% else %}
+                                    <span class="text-muted">Chưa phân loại</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ book.added_at|safe_date }}</td>
+                            <td>
+                                <div class="btn-group">
+                                    <a href="{{ url_for('book_detail', book_id=book.id) }}" class="btn btn-sm btn-info text-white">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ url_for('edit_book', book_id=book.id) }}" class="btn btn-sm btn-warning text-white">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-danger delete-book-btn" 
+                                           data-book-id="{{ book.id }}" 
+                                           data-book-title="{{ book.title }}">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center">Chưa có sách nào!</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Single Modal for All Books -->
+<div class="modal fade" id="deleteBookModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Xác nhận xóa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn xóa sách <strong id="bookTitleToDelete"></strong>?</p>
+                <p class="text-danger"><small>Lưu ý: Hành động này không thể hoàn tác và sẽ xóa tất cả lịch sử mượn liên quan đến sách này!</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <form id="deleteBookForm" method="POST">
+                    <button type="submit" class="btn btn-danger">Xóa</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Lắng nghe sự kiện click trên tất cả nút xóa
+        const deleteButtons = document.querySelectorAll('.delete-book-btn');
+        const deleteModal = new bootstrap.Modal(document.getElementById('deleteBookModal'));
+        
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Lấy thông tin sách từ data attributes
+                const bookId = this.getAttribute('data-book-id');
+                const bookTitle = this.getAttribute('data-book-title');
+                
+                // Cập nhật nội dung modal
+                document.getElementById('bookTitleToDelete').textContent = bookTitle;
+                
+                // Cập nhật action của form xóa
+                document.getElementById('deleteBookForm').action = "{{ url_for('delete_book', book_id=0) }}".replace('0', bookId);
+                
+                // Hiển thị modal
+                deleteModal.show();
+            });
+        });
+    });
+</script>
+{% endblock %}

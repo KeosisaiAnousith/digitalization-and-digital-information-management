@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Quản lý mượn trả - Thư viện số{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Quản lý mượn trả</h1>
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-primary">
+        <i class="fas fa-tachometer-alt me-1"></i>Bảng điều khiển
+    </a>
+</div>
+
+<div class="card shadow">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Người dùng</th>
+                        <th>Sách</th>
+                        <th>Ngày mượn</th>
+                        <th>Hạn trả</th>
+                        <th>Ngày trả</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for borrow, user, book in borrows %}
+                        <tr>
+                            <td>{{ borrow.id }}</td>
+                            <td>{{ user.username }}</td>
+                            <td>{{ book.title }}</td>
+                            <td>{{ borrow.borrow_date|safe_date }}</td>
+                            <td>{{ borrow.due_date|safe_date }}</td>
+                            <td>
+                                {% if borrow.return_date %}
+                                    {{ borrow.return_date|safe_date }}
+                                {% else %}
+                                    <span class="text-muted">Chưa trả</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if borrow.status == 'borrowed' %}
+                                    <span class="badge bg-primary">Đang mượn</span>
+                                {% elif borrow.status == 'returned' %}
+                                    <span class="badge bg-success">Đã trả</span>
+                                {% elif borrow.status == 'overdue' %}
+                                    <span class="badge bg-danger">Quá hạn</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if borrow.status != 'returned' %}
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
+                                            Cập nhật
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li>
+                                                <form action="{{ url_for('update_borrow', borrow_id=borrow.id) }}" method="POST">
+                                                    <input type="hidden" name="status" value="returned">
+                                                    <button type="submit" class="dropdown-item">Đánh dấu đã trả</button>
+                                                </form>
+                                            </li>
+                                            <li>
+                                                <form action="{{ url_for('update_borrow', borrow_id=borrow.id) }}" method="POST">
+                                                    <input type="hidden" name="status" value="overdue">
+                                                    <button type="submit" class="dropdown-item">Đánh dấu quá hạn</button>
+                                                </form>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                {% else %}
+                                    <span class="text-muted"><i class="fas fa-check-circle"></i> Đã hoàn tất</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center">Chưa có lượt mượn sách nào!</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

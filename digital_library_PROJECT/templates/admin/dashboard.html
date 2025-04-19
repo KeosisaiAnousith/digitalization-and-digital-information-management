@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block title %}Bảng điều khiển - Thư viện số{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Bảng điều khiển quản trị</h1>
+
+<!-- Thống kê tổng quan -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-users fa-3x mb-3"></i>
+                <h3>{{ total_users }}</h3>
+                <p class="mb-0">Người dùng</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-book fa-3x mb-3"></i>
+                <h3>{{ total_books }}</h3>
+                <p class="mb-0">Sách</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-download fa-3x mb-3"></i>
+                <h3>{{ total_borrows }}</h3>
+                <p class="mb-0">Lượt mượn sách</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lượt mượn sách gần đây -->
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Lượt mượn sách gần đây</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Người dùng</th>
+                        <th>Sách</th>
+                        <th>Ngày mượn</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for borrow, user, book in latest_borrows %}
+                        <tr>
+                            <td>{{ user.username }}</td>
+                            <td>{{ book.title }}</td>
+                            <td>{{ borrow.borrow_date|safe_date('%d/%m/%Y %H:%M') }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="3" class="text-center">Không có lượt mượn sách nào</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Thao tác nhanh -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Thao tác nhanh</h5>
+    </div>
+    <div class="card-body">
+        <a href="{{ url_for('add_book') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i>Thêm sách mới
+        </a>
+        <!-- Thêm hai nút sau đây -->
+        <a href="{{ url_for('book_import.import_books_page') }}" class="btn btn-info text-white mx-1">
+            <i class="fas fa-file-import me-1"></i>Nhập sách tự động
+        </a>
+        <a href="{{ url_for('analytics.analytics_dashboard') }}" class="btn btn-warning text-white mx-1">
+            <i class="fas fa-chart-line me-1"></i>Phân tích dữ liệu
+        </a>
+    </div>
+</div>
+{% endblock %}

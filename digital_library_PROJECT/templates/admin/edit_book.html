@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block title %}Chỉnh sửa sách - Thư viện số{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('admin_dashboard') }}">Trang quản trị</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('admin_books') }}">Quản lý sách</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Chỉnh sửa sách</li>
+                </ol>
+            </nav>
+            <h1 class="mb-4">Chỉnh sửa sách</h1>
+            
+            <div class="card">
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="title" class="form-label">Tiêu đề</label>
+                                    <input type="text" class="form-control" id="title" name="title" value="{{ book.title }}" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="author" class="form-label">Tác giả</label>
+                                    <input type="text" class="form-control" id="author" name="author" value="{{ book.author }}" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="category_id" class="form-label">Danh mục</label>
+                                    <select class="form-select" id="category_id" name="category_id" required>
+                                        {% for category in categories %}
+                                            <option value="{{ category.id }}" {% if book.category_id == category.id %}selected{% endif %}>{{ category.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="publication_year" class="form-label">Năm xuất bản</label>
+                                    <input type="number" class="form-control" id="publication_year" name="publication_year" value="{{ book.publication_year }}">
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="language" class="form-label">Ngôn ngữ</label>
+                                    <input type="text" class="form-control" id="language" name="language" value="{{ book.language }}">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="pages" class="form-label">Số trang</label>
+                                    <input type="number" class="form-control" id="pages" name="pages" value="{{ book.pages }}">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="cover" class="form-label">Ảnh bìa</label>
+                                    <input type="file" class="form-control" id="cover" name="cover">
+                                    {% if book.cover_image %}
+                                        <div class="mt-2">
+                                            <img src="{{ url_for('static', filename='uploads/covers/' + book.cover_image) }}" alt="Ảnh bìa" style="max-height: 100px;">
+                                            <p class="text-muted small">Ảnh bìa hiện tại. Chọn file mới để thay đổi.</p>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="book_file" class="form-label">File sách</label>
+                                    <input type="file" class="form-control" id="book_file" name="book_file">
+                                    {% if book.file_path %}
+                                        <p class="text-muted small mt-2">File hiện tại: {{ book.file_path }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-12">
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Mô tả</label>
+                                    <textarea class="form-control" id="description" name="description" rows="5">{{ book.description }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{{ url_for('admin_books') }}" class="btn btn-secondary">Hủy</a>
+                            <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
