@@ -1,0 +1,457 @@
+/* Styles chung */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    font-family: 'Roboto', sans-serif;
+    color: #333;
+    background-color: #f9f9f9;
+}
+
+main {
+    flex: 1;
+}
+
+footer {
+    margin-top: auto;
+    padding: 1.5rem 0;
+    background-color: #f8bbd0;
+    color: #424242;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 500;
+    margin-bottom: 1rem;
+}
+
+/* Container adjustments */
+.container {
+    max-width: 1200px;
+    padding: 0 15px;
+}
+
+/* Cards */
+.card {
+    margin-bottom: 20px;
+    border-radius: 0.5rem;
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.card-img-top {
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
+    height: 200px;
+    object-fit: cover;
+}
+
+.card-body {
+    padding: 1.25rem;
+}
+
+.card-title {
+    font-weight: 500;
+    margin-bottom: 0.75rem;
+}
+
+.card-text {
+    color: #6c757d;
+}
+
+/* Navbar */
+.navbar {
+    padding: 0.8rem 1rem;
+}
+
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+.nav-link {
+    font-weight: 500;
+    padding: 0.5rem 1rem !important;
+}
+
+/* Jumbotron */
+.jumbotron {
+    background-size: cover;
+    background-position: center;
+    padding: 4rem 2rem;
+    margin-bottom: 2rem;
+    border-radius: 0.5rem;
+}
+
+/* Book list */
+.book-list .card-img-top {
+    height: 200px;
+    object-fit: cover;
+}
+
+.book-author {
+    font-style: italic;
+    color: #6c757d;
+}
+
+.book-category {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+}
+
+/* Book details */
+.book-details-img {
+    max-width: 100%;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+/* Admin dashboard */
+.stats-card {
+    text-align: center;
+    padding: 1.5rem;
+}
+
+.stats-card i {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: #f48fb1;
+}
+
+.stats-card .card-title {
+    font-size: 1.25rem;
+    font-weight: 500;
+}
+
+.stats-card .card-text {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #333;
+}
+
+.admin-table {
+    background-color: #fff;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+/* Forms */
+.form-control {
+    border-radius: 0.25rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #ced4da;
+}
+
+.form-control:focus {
+    border-color: #f48fb1;
+    box-shadow: 0 0 0 0.2rem rgba(244, 143, 177, 0.25);
+}
+
+.form-label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+/* Buttons */
+.btn {
+    border-radius: 0.25rem;
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+/* QR code container */
+.qr-code-container {
+    text-align: center;
+    padding: 1rem;
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.qr-code-container img {
+    max-width: 200px;
+}
+
+/* Receipt styling */
+.receipt {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.receipt-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.receipt-info {
+    margin-bottom: 1.5rem;
+}
+
+.receipt-id {
+    font-family: monospace;
+    background-color: #f8f9fa;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .card-title {
+        font-size: 1rem;
+    }
+    
+    .navbar-brand {
+        font-size: 1.25rem;
+    }
+    
+    .jumbotron {
+        padding: 2rem 1rem;
+    }
+    
+    .stats-card i {
+        font-size: 2rem;
+    }
+    
+    .stats-card .card-text {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .container {
+        padding: 0 10px;
+    }
+    
+    .card-img-top {
+        height: 150px;
+    }
+}
+
+/* Thay đổi màu sắc từ xanh sang hồng nhạt */
+
+/* Màu nền chính */
+.bg-primary {
+    background-color: #f8bbd0 !important; /* Hồng nhạt */
+}
+
+/* Màu nút */
+.btn-primary {
+    background-color: #f48fb1 !important; /* Hồng đậm hơn cho nút */
+    border-color: #f48fb1 !important;
+}
+
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active {
+    background-color: #f06292 !important; /* Hồng đậm hơn khi hover */
+    border-color: #f06292 !important;
+}
+
+/* Màu chữ trên nền hồng */
+.bg-primary.text-white, .card-header.bg-primary {
+    color: #424242 !important; /* Màu chữ đậm hơn để dễ đọc trên nền hồng */
+}
+
+/* Navbar */
+.navbar-dark.bg-primary {
+    background-color: #f8bbd0 !important;
+}
+
+.navbar-dark .navbar-nav .nav-link {
+    color: #424242 !important;
+}
+
+.navbar-dark .navbar-nav .nav-link:hover {
+    color: #000000 !important;
+}
+
+/* Outline buttons */
+.btn-outline-primary {
+    color: #f48fb1 !important;
+    border-color: #f48fb1 !important;
+}
+
+.btn-outline-primary:hover, .btn-outline-primary:focus, .btn-outline-primary:active {
+    background-color: #f48fb1 !important;
+    color: #424242 !important;
+}
+
+/* Pagination */
+.page-item.active .page-link {
+    background-color: #f48fb1 !important;
+    border-color: #f48fb1 !important;
+}
+
+.page-link {
+    color: #f48fb1 !important;
+}
+
+.page-link:hover {
+    color: #e91e63 !important;
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+}
+
+/* Cards */
+.card-header.bg-primary {
+    background-color: #f8bbd0 !important;
+}
+
+/* Buttons success và các nút khác */
+.btn-success {
+    background-color: #81c784 !important;
+    border-color: #81c784 !important;
+}
+
+.btn-success:hover, .btn-success:focus, .btn-success:active {
+    background-color: #66bb6a !important;
+    border-color: #66bb6a !important;
+}
+
+.btn-danger {
+    background-color: #e57373 !important;
+    border-color: #e57373 !important;
+}
+
+.btn-danger:hover, .btn-danger:focus, .btn-danger:active {
+    background-color: #ef5350 !important;
+    border-color: #ef5350 !important;
+}
+
+.btn-warning {
+    background-color: #ffb74d !important;
+    border-color: #ffb74d !important;
+    color: #424242 !important;
+}
+
+.btn-warning:hover, .btn-warning:focus, .btn-warning:active {
+    background-color: #ffa726 !important;
+    border-color: #ffa726 !important;
+}
+
+/* Badges */
+.badge.bg-primary {
+    background-color: #f48fb1 !important;
+    color: #424242 !important;
+}
+
+.badge.bg-success {
+    background-color: #81c784 !important;
+    color: #424242 !important;
+}
+
+.badge.bg-warning {
+    background-color: #ffb74d !important;
+    color: #424242 !important;
+}
+
+.badge.bg-danger {
+    background-color: #e57373 !important;
+    color: white !important;
+}
+
+/* Alerts */
+.alert-primary {
+    background-color: #f8bbd0 !important;
+    border-color: #f48fb1 !important;
+    color: #424242 !important;
+}
+
+.alert-success {
+    background-color: #c8e6c9 !important;
+    border-color: #81c784 !important;
+    color: #2e7d32 !important;
+}
+
+.alert-warning {
+    background-color: #ffe0b2 !important;
+    border-color: #ffb74d !important;
+    color: #ef6c00 !important;
+}
+
+.alert-danger {
+    background-color: #ffcdd2 !important;
+    border-color: #e57373 !important;
+    color: #c62828 !important;
+}
+
+/* Links */
+a {
+    color: #f06292;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #ec407a;
+    text-decoration: underline;
+}
+
+/* Dropdown menus */
+.dropdown-item:active, .dropdown-item.active {
+    background-color: #f8bbd0 !important;
+    color: #424242 !important;
+}
+
+.dropdown-item:hover {
+    background-color: #f3f3f3;
+}
+
+/* Tables */
+.table {
+    background-color: white;
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.table th {
+    background-color: #f8bbd0;
+    color: #424242;
+    border-color: #f48fb1;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(248, 187, 208, 0.1);
+}
+
+/* Tooltips */
+.tooltip .tooltip-inner {
+    background-color: #f48fb1;
+    color: #424242;
+}
+
+/* User profile */
+.profile-header {
+    background-color: #f8bbd0;
+    padding: 2rem;
+    border-radius: 0.5rem;
+    margin-bottom: 2rem;
+}
+
+.profile-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 5px solid white;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+/* Login and register */
+.auth-card {
+    max-width: 450px;
+    margin: 0 auto;
+    margin-top: 3rem;
+}
+
+/* Custom checkboxes and radio buttons */
+.custom-control-input:checked ~ .custom-control-label::before {
+    background-color: #f48fb1;
+    border-color: #f48fb1;
+}
