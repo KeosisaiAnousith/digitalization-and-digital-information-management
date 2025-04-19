@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Lỗi - Thư viện số{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="alert alert-danger">
+        <h3>Đã xảy ra lỗi</h3>
+        <p>{{ error }}</p>
+        <hr>
+        <a href="{{ url_for('index') }}" class="btn btn-primary">Quay về trang chủ</a>
+    </div>
+</div>
+{% endblock %}

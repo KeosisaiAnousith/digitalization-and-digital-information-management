@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Trang chủ - Thư viện số{% endblock %}
+
+{% block content %}
+<div class="jumbotron bg-light p-5 rounded">
+    <h1 class="display-4">Chào mừng đến với Thư viện số!</h1>
+    <p class="lead">Khám phá kho tàng sách phong phú, đọc và tải về mọi lúc mọi nơi.</p>
+    <hr class="my-4">
+    <p>Đăng ký tài khoản để có thể mượn sách, đánh giá và lưu sách yêu thích của bạn.</p>
+    <a class="btn btn-primary btn-lg" href="{{ url_for('book_list') }}" role="button">
+        <i class="fas fa-book me-2"></i>Khám phá sách
+    </a>
+    {% if not current_user %}
+        <a class="btn btn-outline-primary btn-lg ms-2" href="{{ url_for('register') }}" role="button">
+            <i class="fas fa-user-plus me-2"></i>Đăng ký ngay
+        </a>
+    {% endif %}
+</div>
+
+<!-- Sách mới nhất -->
+<section class="mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Sách mới nhất</h2>
+        <a href="{{ url_for('book_list') }}" class="btn btn-outline-primary">Xem tất cả</a>
+    </div>
+    <div class="row">
+        {% for book in books %}
+            <div class="col-md-4 col-lg-2 mb-4">
+                <div class="card h-100">
+                    {% if book.cover_image %}
+                        <img src="{{ url_for('static', filename='uploads/covers/' + book.cover_image) }}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="{{ book.title }}">
+                    {% else %}
+                        <div class="bg-secondary text-white d-flex justify-content-center align-items-center" style="height: 200px;">
+                            <i class="fas fa-book fa-3x"></i>
+                        </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ book.title }}</h5>
+                        <p class="card-text text-muted">{{ book.author }}</p>
+                    </div>
+                    <div class="card-footer bg-white border-top-0">
+                        <a href="{{ url_for('book_detail', book_id=book.id) }}" class="btn btn-outline-primary btn-sm d-block">Xem chi tiết</a>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12">
+                <p class="text-center">Không có sách nào.</p>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
